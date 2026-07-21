@@ -1,11 +1,31 @@
-name: build
-on: [push, pull_request]
+name: Build Windows
+
+on:
+    workflow_dispatch:
 
 jobs:
-  build:
-    uses: charmbracelet/meta/.github/workflows/build.yml@main
-    with:
-      go-version: ""
-      go-version-file: ./go.mod
-    secrets:
-      gh_pat: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+    build-windows:
+        runs-on: windows-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version-file: go.mod
+                  cache: true
+
+            - name: Download dependencies
+              run: go mod download
+
+            - name: Build
+              run: |
+                  go build -o freeze.exe .
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: freeze-windows
+                  path: freeze.exe
